@@ -1,35 +1,36 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TodoForm from "../TodoForm/TodoForm";
 import TodoItem from "../TodoItem/TodoItem";
 import "./TodoCategory.css"
 
 
 const TodoCategory = (props) => {
-    const category = props.category;
-    const classes = `todo__category todo__category--${category}`
-    const title = category === 'high'?"High":"Low"
-    const defaultStatus = 'In progress'
+  const category = props.category;
+  const classes = `todo__category todo__category--${category}`
+  const title = category === 'high'?"High":"Low";
+  let initialTasks = [];
 
-    const initialTasks = []
-    const [id, setId] = useState(0)
-    const [text, setText] = useState('')
-    const [tasks, setTasks] = useState(initialTasks)
-    const [checkStatus, setCheckStatus] = useState('inProgress');
-
-
-    function changeStatus(task, status) {
-      const currentTask = tasks.find((item) => item.id === task.id);
-      console.log(currentTask)
-
-    }
+  const [id, setId] = useState(Math.floor(Math.random() * 100)
+  )
+  const [text, setText] = useState('')
+  const [tasks, setTasks] = useState(initialTasks)
+  
     
-
   const submitHandler = (e) => {
 
     const target = e.target;
     e.preventDefault()
+    const taskIsPresent = tasks.some((task) => task.title === text);
+    if(taskIsPresent) {
+      setText('This task is already added!')
 
+      setTimeout(() => {
+        setText('')
+      },1000)
+
+      return
+    }
     setTasks([
       ...tasks,
       {
@@ -43,7 +44,8 @@ const TodoCategory = (props) => {
 
     setText('')
     
-    setId(id + 1)
+    setId(Math.floor(Math.random() * 100)
+    )
   }  
 
   const changeHandler = (e) => {
@@ -54,6 +56,24 @@ const TodoCategory = (props) => {
     const filtered = tasks.filter((task => task.id != e.target.closest('.todo__item').id))
     setTasks(filtered)
   }
+
+
+
+  useEffect(() => {
+    
+    const targetList = category === "high"?'tasksListHigh':'tasksListLow';
+    const retrievedTasks = JSON.parse(localStorage.getItem(targetList)) || [];
+
+    setTasks(retrievedTasks)
+  },[])
+
+useEffect(() => {
+  const targetList = category === "high"?'tasksListHigh':'tasksListLow';
+  const formattedTasks = JSON.stringify(tasks || [])
+  localStorage.setItem(targetList,formattedTasks)
+},[tasks])
+
+
 
 
   const checkHandler = (e) => {
